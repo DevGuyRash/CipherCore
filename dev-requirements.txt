@@ -1,4 +1,4 @@
-# dev-requirements.txt (development & CI)
+# dev-requirements.txt (dev & CI only)
 
 jupyter
 ruff>=0.0.280

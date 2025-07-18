@@ -1,27 +1,10 @@
-# Core dependencies for crypto trading agent prototype
+# requirements.txt (runtime only)
 
-# OpenAI for o3-pro and o3-deep-research models
-openai>=1.35.0
-
-# LangGraph for stateful orchestration with checkpointing
-langgraph>=0.2.0
-
-# Crypto exchange SDKs and data sources
-hyperliquid-python-sdk
-apexpro
-ccxt
-
-# Data processing
-pandas>=1.5.3,<2.0
-numpy<2.0
-
-# Environment management
-python-dotenv>=1.0.0
-
-# Additional utilities
-jupyter  # For bootstrap notebook
-
-# Static analysis (optional but recommended)
-ruff>=0.0.280
-mypy>=1.6.0
-pytest>=7.4.0
+openai>=1.35.0                  # o3‑pro & o3‑deep‑research
+langgraph>=0.2.0               # orchestration + persistence
+hyperliquid-python-sdk         # Hyperliquid DEX SDK
+apexpro                        # ApeX Protocol SDK
+ccxt                           # supplemental exchange data
+pandas>=1.5.3,<2.0             # data frames (pins numpy <2.0)
+numpy<2.0                      # avoid pandas–NumPy 2.0 conflict
+python-dotenv>=1.0.0           # env var loader
