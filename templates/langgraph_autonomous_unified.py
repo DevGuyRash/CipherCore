@@ -22,6 +22,19 @@ import numpy as np
 from collections import defaultdict, deque
 import sqlite3
 
+from config.settings import (
+    DEFAULT_ASSET,
+    DEFAULT_TIMEFRAME,
+    OPENAI_MODEL_DISCOVERY,
+    OPENAI_MODEL_RESEARCH,
+    OPENAI_MODEL_REASONING,
+    MEMORY_DB_PATH,
+    DISCOVERY_CONFIDENCE_MIN,
+    DISCOVERY_UNIQUENESS_MIN,
+    VALIDATION_SCORE_MIN,
+    MAX_TRADE_RESULTS_HISTORY,
+)
+
 # Load environment
 load_dotenv()
 
@@ -166,8 +179,8 @@ def ingestion_node(state: UnifiedTradingState) -> UnifiedTradingState:
     """Enhanced Data Ingestion with multi-timeframe support for autonomous discovery"""
     print("🔄 Data Ingestion Node: Fetching market data...")
     
-    asset = state.get('asset', 'BTC/USDT')
-    timeframe = state.get('timeframe', '1h')
+    asset = state.get('asset', DEFAULT_ASSET)
+    timeframe = state.get('timeframe', DEFAULT_TIMEFRAME)
     
     try:
         if APEX_AVAILABLE:
@@ -278,7 +291,7 @@ AUTONOMOUS PATTERN DISCOVERY SESSION
 TIMESTAMP: {datetime.now().isoformat()}
 
 MARKET DATA ANALYSIS:
-- Asset: {state.get('asset', 'BTC/USDT')}
+- Asset: {state.get('asset', DEFAULT_ASSET)}
 - Current Price: {market_summary.get('current_price', 'N/A')}
 - Volume 24h: {market_summary.get('volume_24h', 'N/A')}
 - Price Change 24h: {market_summary.get('price_change_24h', 'N/A')}
@@ -307,7 +320,7 @@ Focus on raw intelligence and emergent behavior rather than traditional technica
 
         # Call AI for pattern discovery
         response = client.chat.completions.create(
-            model="o3-mini",
+            model=OPENAI_MODEL_DISCOVERY,
             messages=[
                 {"role": "system", "content": "You are an expert autonomous pattern discovery AI specialized in identifying novel market patterns and emergent behaviors in cryptocurrency markets."},
                 {"role": "user", "content": discovery_prompt}
@@ -325,7 +338,10 @@ Focus on raw intelligence and emergent behavior rather than traditional technica
         patterns_added = 0
         
         for pattern in discovered_patterns:
-            if pattern.confidence_score >= 0.3 and pattern.uniqueness_score >= 0.3:  # Lowered thresholds
+            if (
+                pattern.confidence_score >= DISCOVERY_CONFIDENCE_MIN
+                and pattern.uniqueness_score >= DISCOVERY_UNIQUENESS_MIN
+            ):
                 current_patterns[pattern.pattern_id] = pattern.to_dict()
                 patterns_added += 1
                 
@@ -407,7 +423,7 @@ def parse_discovery_response(ai_response: str) -> List[DiscoveredPattern]:
                     confidence_score=current_pattern.get('confidence', 0.0),
                     uniqueness_score=current_pattern.get('uniqueness', 0.0),
                     reasoning=current_pattern.get('reasoning', ''),
-                    timeframes=current_pattern.get('timeframes', ['1h']),
+                    timeframes=current_pattern.get('timeframes', [DEFAULT_TIMEFRAME]),
                     market_conditions=current_pattern.get('market_conditions', {}),
                     discovered_at=datetime.now().isoformat()
                 )
@@ -446,7 +462,7 @@ def parse_discovery_response(ai_response: str) -> List[DiscoveredPattern]:
             confidence_score=current_pattern.get('confidence', 0.0),
             uniqueness_score=current_pattern.get('uniqueness', 0.0),
             reasoning=current_pattern.get('reasoning', ''),
-            timeframes=current_pattern.get('timeframes', ['1h']),
+            timeframes=current_pattern.get('timeframes', [DEFAULT_TIMEFRAME]),
             market_conditions=current_pattern.get('market_conditions', {}),
             discovered_at=datetime.now().isoformat()
         )
@@ -483,7 +499,7 @@ def pattern_validation_node(state: UnifiedTradingState) -> UnifiedTradingState:
         
         pattern_data['validation_score'] = validation_score
         
-        if validation_score >= 0.4:  # Lowered threshold
+        if validation_score >= VALIDATION_SCORE_MIN:
             validated_count += 1
             print(f"✅ Pattern validated: {pattern_id} (score: {validation_score:.3f})")
         else:
@@ -512,7 +528,7 @@ def intelligence_node(state: UnifiedTradingState) -> UnifiedTradingState:
     
     for pattern_id, pattern_data in pattern_library.items():
         validation_score = pattern_data.get('validation_score', 0.0)
-        if validation_score >= 0.4:
+        if validation_score >= VALIDATION_SCORE_MIN:
             relevant_patterns.append(pattern_data)
             pattern_boost += validation_score * 0.1  # Small boost per validated pattern
     
@@ -623,8 +639,8 @@ def monitoring_node(state: UnifiedTradingState) -> UnifiedTradingState:
     state['trade_results'].append(trade_result)
     
     # Limit history size
-    if len(state['trade_results']) > 500:
-        state['trade_results'] = state['trade_results'][-500:]
+    if len(state['trade_results']) > MAX_TRADE_RESULTS_HISTORY:
+        state['trade_results'] = state['trade_results'][-MAX_TRADE_RESULTS_HISTORY:]
     
     state['performance_metrics'] = performance_metrics
     state['monitoring_timestamp'] = datetime.now().isoformat()
@@ -680,14 +696,14 @@ def build_unified_trading_graph():
     )
     
     # Compile with persistent SQLite memory
-    conn = sqlite3.connect("unified_memory.sqlite", check_same_thread=False)
+    conn = sqlite3.connect(MEMORY_DB_PATH, check_same_thread=False)
     memory = SqliteSaver(conn)
     app = workflow.compile(checkpointer=memory)
     
     print("✅ Unified LangGraph trading system compiled with autonomous discovery")
     return app
 
-def run_unified_autonomous_system(asset: str = 'BTC/USDT', 
+def run_unified_autonomous_system(asset: str = DEFAULT_ASSET,
                                  max_iterations: int = 3,
                                  autonomous_enabled: bool = True):
     """Run the unified autonomous trading system"""
@@ -700,7 +716,7 @@ def run_unified_autonomous_system(asset: str = 'BTC/USDT',
     initial_state: UnifiedTradingState = {
         # Trading fields
         'asset': asset,
-        'timeframe': '1h',
+        'timeframe': DEFAULT_TIMEFRAME,
         'start_time': datetime.now().isoformat(),
         'raw_data': {},
         'market_summary': {},
@@ -803,7 +819,7 @@ if __name__ == "__main__":
     # Test the unified system
     try:
         result = run_unified_autonomous_system(
-            asset='BTC/USDT', 
+            asset=DEFAULT_ASSET,
             max_iterations=2,
             autonomous_enabled=True
         )
