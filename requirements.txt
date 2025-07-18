@@ -1,0 +1,21 @@
+# Core dependencies for crypto trading agent prototype
+# OpenAI for o3-pro and o3-deep-research models
+openai>=1.35.0
+
+# LangGraph for stateful orchestration with checkpointing
+langgraph>=0.2.0
+
+# Crypto exchange SDKs and data sources
+hyperliquid-python-sdk
+apexpro
+ccxt
+
+# Data processing
+pandas
+numpy
+
+# Environment management
+python-dotenv
+
+# Additional utilities
+jupyter  # For bootstrap notebook 

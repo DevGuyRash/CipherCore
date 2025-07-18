@@ -1,0 +1,3 @@
+# allow environment files
+!.env
+!.env.*
