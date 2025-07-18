@@ -1,0 +1,6 @@
+# dev-requirements.txt (development & CI)
+
+jupyter
+ruff>=0.0.280
+mypy>=1.6.0
+pytest>=7.4.0
